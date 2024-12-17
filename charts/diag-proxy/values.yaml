@@ -1,0 +1,119 @@
+# --- The service name of diag-proxy, will be use in labels and deployment
+SERVICE_NAME: diag-proxy
+
+# -- The artifact version
+ARTIFACT_DESCRIPTOR_VERSION: ''
+
+# -- Image coordinates, next two values will be joined as:
+# IMAGE_REPOSITORY:TAG
+IMAGE_REPOSITORY: ''
+TAG: ''
+
+### Deployment parameters
+
+# --- Number of diag-proxy replicas (pods per deployment)
+NUMBER_OF_PODS: 1
+
+# --- Assigned to the Pods to prevent them from evicting
+# PRIORITY_CLASS_NAME: ''
+
+# --- Allow to set CPU requests for pod
+CPU_REQUEST: 100m
+
+# --- Allow to set Memory requests for pod
+MEMORY_REQUEST: 20Mi
+
+# --- Allow to set CPU limits for pod
+CPU_LIMIT: 500m
+
+# --- Allow to set Memory limits for pod
+MEMORY_LIMIT: 500Mi
+
+# --- Pod SecurityContext
+# More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#podsecuritycontext-v1-core
+securityContext: {}
+#   runAsUser: 2000
+
+# --- If specified set affinity parameters
+# More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#affinity-v1-core
+affinity: {}
+
+# --- If specified, set the Tolerations parameters
+# More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#toleration-v1-core
+tolerations: []
+
+# --- If specified, set the Node Selector parameters
+# More info: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#nodeselector-v1-core
+nodeSelector: {}
+
+# --- Disable host resolving during run and allow to run agent with pre-configured hosts without check them
+SKIP_HOSTNAME_RESOLVING: false
+
+### ESC parameters
+
+# --- Namespace where Execution Statistics Collector is installed.
+# If neither ESC_COLLECTOR_NS nor (ESC_COLLECTOR_HOST and ESC_STATIC_HOST) are specified,
+# the ESC proxy (ESC part of the agent, which is separate from Zipkin and Jaeger proxies)
+# will be disabled
+# Default: profiler
+#
+ESC_COLLECTOR_NS: profiler
+
+# ---Collector service of Execution Statistics Collector
+# ESC_COLLECTOR_HOST: ''
+
+# --- Static Nginx service of Execution Statistics Collector
+# ESC_STATIC_HOST: ''
+
+### Jaeger parameters
+
+# --- Namespace where Jaeger is installed.
+# If JAEGER_COLLECTOR_HOST not specified, the Tracing proxy will be disabled
+# Default: jaeger
+#
+JAEGER_NS: jaeger
+
+# ---Jaeger collector host to receive traces using different ports and protocols
+# JAEGER_COLLECTOR_HOST: ''
+
+# ---Jaeger port to receive/proxy traces in thrift format (Jaeger/OpenTracing format) traces by GRPC
+# JAEGER_GRPC_PORT:
+
+# --- Jaeger port to receive/proxy traces in thrift format (Jaeger/OpenTracing format) traces by TCP/UDP
+# JAEGER_AGENT_PORT:
+
+# --- Jaeger port to receive/proxy traces in thrift format (Jaeger/OpenTracing format) traces by GRPC
+# JAEGER_THRIFT_PORT:
+
+# --- Jaeger port to receive/proxy traces in OpenTelemetry format traces by GRPC
+# JAEGER_OTEL_GRPC_PORT:
+
+# --- Jaeger port to receive/proxy traces in OpenTelemetry format traces by HTTP/HTTPS
+# JAEGER_OTEL_HTTP_PORT:
+
+### Zipkin parameters, for backward compatibility
+
+# --- Jaeger collector host to receive traces using different ports and protocols
+# Separated variable kept for backward compatibility
+# ZIPKIN_COLLECTOR_HOST: ''
+
+# --- Jaeger port to receive/proxy traces in Zipkin format traces by HTTP
+# ZIPKIN_COLLECTOR_PORT: ''
+
+### TLS/HTTPs parameters
+
+# --- TLS force encryption settings
+# Allow to force encrypt TCP traffic in TLS and send from proxy encrypted traffic
+tlsConfig:
+
+  # Enable or disable force encryption
+  enabled: false
+
+  # CA certificate content, will be save in the Secret
+  # caCert: ~
+
+  # Public certificate content, will be save in the Secret
+  # tlsCert: ~
+
+  # Private certificate content, will be save in the Secret
+  # tlsKey: ~

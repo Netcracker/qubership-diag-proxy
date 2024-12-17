@@ -1,0 +1,190 @@
+# This template can be applying for deploy in Kubernetes or OpenShift >=3.11
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Values.SERVICE_NAME }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.SERVICE_NAME }}
+    app.kubernetes.io/version: {{ .Values.ARTIFACT_DESCRIPTOR_VERSION | quote }}
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: esc
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.SERVICE_NAME }}
+  replicas: {{ .Values.NUMBER_OF_PODS }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.SERVICE_NAME }}
+        app.kubernetes.io/version: {{ .Values.ARTIFACT_DESCRIPTOR_VERSION | quote }}
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/part-of: esc
+    spec:
+      {{- if .Values.PRIORITY_CLASS_NAME }}
+      priorityClassName: {{ .Values.PRIORITY_CLASS_NAME | quote }}
+      {{- end }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- if .Values.securityContext }}
+      securityContext: {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: config
+        emptyDir: {}
+      {{- if .Values.tlsConfig }}
+      {{- if .Values.tlsConfig.enabled }}
+      - name: tls-assets
+        secret:
+          secretName: tls-assets-nc-diag-agent
+      {{- end }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.SERVICE_NAME }}
+        image: '{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.TAG }}'
+        ports:
+        - name: cdt-tcp
+          containerPort: 1715
+          protocol: TCP
+        - name: cdt-http
+          containerPort: 8080
+          protocol: TCP
+        - name: zipkin
+          containerPort: 9411
+          protocol: TCP
+        - name: otel-grpc
+          containerPort: 4317
+          protocol: TCP
+        - name: otel-http
+          containerPort: 4318
+          protocol: TCP
+        - name: jaeger-grpc
+          containerPort: 14250
+          protocol: TCP
+        - name: jgrtrftagent
+          containerPort: 14267
+          protocol: TCP
+        - name: jaeger-thrift
+          containerPort: 14268
+          protocol: TCP
+        - name: probes
+          containerPort: 8888
+          protocol: TCP
+        resources:
+          requests:
+            cpu: {{ .Values.CPU_REQUEST | quote }}
+            memory: {{ .Values.MEMORY_REQUEST | quote }}
+          limits:
+            cpu: {{ .Values.CPU_LIMIT | quote }}
+            memory: {{ .Values.MEMORY_LIMIT | quote }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: config
+          mountPath: /etc/nginx/conf.d
+        {{- if .Values.tlsConfig }}
+        {{- if .Values.tlsConfig.enabled }}
+        - name: tls-assets
+          mountPath: /etc/nginx/certs
+        {{- end }}
+        {{- end }}
+        env:
+        {{- if .Values.SKIP_HOSTNAME_RESOLVING }}
+        - name: SKIP_HOSTNAME_RESOLVING
+          value: {{ .Values.SKIP_HOSTNAME_RESOLVING | quote }}
+        {{- end }}
+        {{- if .Values.tlsConfig.enabled }}
+        - name: ESC_SSL_ENABLED
+          value: {{ .Values.tlsConfig.enabled | quote }}
+        {{- end }}
+        {{- if .Values.ESC_COLLECTOR_NS }}
+        - name: ESC_COLLECTOR_NS
+          value: {{ .Values.ESC_COLLECTOR_NS | quote }}
+        {{- end }}
+        {{- if .Values.ESC_COLLECTOR_HOST }}
+        - name: ESC_COLLECTOR_HOST
+          value: {{ .Values.ESC_COLLECTOR_HOST | quote }}
+        {{- end }}
+        {{- if .Values.ESC_COLLECTOR_PORT }}
+        - name: ESC_COLLECTOR_PORT
+          value: {{ .Values.ESC_COLLECTOR_PORT | quote }}
+        {{- end }}
+        {{- if .Values.ESC_STATIC_HOST }}
+        - name: ESC_STATIC_HOST
+          value: {{ .Values.ESC_STATIC_HOST | quote }}
+        {{- end }}
+        {{- if .Values.ESC_STATIC_PORT }}
+        - name: ESC_STATIC_PORT
+          value: {{ .Values.ESC_STATIC_PORT | quote }}
+        {{- end }}
+        {{- if .Values.tlsConfig.enabled }}
+        - name: ESC_SSL_ENABLED
+          value: {{ .Values.tlsConfig.enabled | quote }}
+        {{- end }}
+        {{- if .Values.ZIPKIN_COLLECTOR_HOST }}
+        - name: ZIPKIN_COLLECTOR_HOST
+          value: {{ .Values.ZIPKIN_COLLECTOR_HOST | quote }}
+        {{- end }}
+        {{- if .Values.ZIPKIN_COLLECTOR_PORT }}
+        - name: ZIPKIN_COLLECTOR_PORT
+          value: {{ .Values.ZIPKIN_COLLECTOR_PORT | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_NS }}
+        - name: JAEGER_NS
+          value: {{ .Values.JAEGER_NS | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_COLLECTOR_HOST }}
+        - name: JAEGER_COLLECTOR_HOST
+          value: {{ .Values.JAEGER_COLLECTOR_HOST | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_GRPC_PORT }}
+        - name: JAEGER_GRPC_PORT
+          value: {{ .Values.JAEGER_GRPC_PORT | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_AGENT_PORT }}
+        - name: JAEGER_AGENT_PORT
+          value: {{ .Values.JAEGER_AGENT_PORT | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_THRIFT_PORT }}
+        - name: JAEGER_THRIFT_PORT
+          value: {{ .Values.JAEGER_THRIFT_PORT | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_OTEL_GRPC_PORT }}
+        - name: JAEGER_OTEL_GRPC_PORT
+          value: {{ .Values.JAEGER_OTEL_GRPC_PORT | quote }}
+        {{- end }}
+        {{- if .Values.JAEGER_OTEL_HTTP_PORT }}
+        - name: JAEGER_OTEL_HTTP_PORT
+          value: {{ .Values.JAEGER_OTEL_HTTP_PORT | quote }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /probes/live
+            port: probes
+            scheme: HTTP
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /probes/ready
+            port: probes
+            scheme: HTTP
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+          failureThreshold: 30
