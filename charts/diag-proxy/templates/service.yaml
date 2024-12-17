@@ -1,0 +1,41 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: '{{ .Values.SERVICE_NAME }}'
+  labels:
+    app.kubernetes.io/name: '{{ .Values.SERVICE_NAME }}'
+    app.kubernetes.io/version: '{{ .Values.ARTIFACT_DESCRIPTOR_VERSION }}'
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: esc
+    app.kubernetes.io/managed-by: saasDeployer
+spec:
+  ports:
+  - name: cdt-tcp
+    port: 1715
+    targetPort: 1715
+  - name: cdt-http
+    port: 8080
+    targetPort: 8080
+  - name: zipkin
+    port: 9411
+    targetPort: 9411
+  - name: otel-grpc
+    port: 4317
+    targetPort: 4317
+  - name: otel-http
+    port: 4318
+    targetPort: 4318
+  - name: jaeger-grpc
+    port: 14250
+    targetPort: 14250
+  - name: jgrtrftagent
+    port: 14267
+    targetPort: 14267
+  - name: jaeger-thrift
+    port: 14268
+    targetPort: 14268
+  - name: agent-probes
+    port: 8888
+    targetPort: 8888
+  selector:
+    name: '{{ .Values.SERVICE_NAME }}'
