@@ -16,7 +16,7 @@ jobs:
         component:
           - name: diag-proxy
             file: Dockerfile
-          - name: jaeger-transfer
+          - name: diag-proxy-transfer
             file: docker-transfer/Dockerfile
     runs-on: ubuntu-latest
     steps:
