@@ -48,8 +48,10 @@ spec:
           secretName: tls-assets-nc-diag-agent
       {{- end }}
       {{- end }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        - name: {{ .Values.IMAGE_PULL_SECRET_NAME }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ .Values.SERVICE_NAME }}
         image: '{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.TAG }}'
