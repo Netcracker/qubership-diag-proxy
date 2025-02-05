@@ -6,10 +6,11 @@ ARTIFACT_DESCRIPTOR_VERSION: ''
 
 # -- Image coordinates, next two values will be joined as:
 # IMAGE_REPOSITORY:TAG
-IMAGE_REPOSITORY: ghcr.io/netcracker/diag-proxy
-TAG: main
+#IMAGE_REPOSITORY: ghcr.io/netcracker/diag-proxy
+#TAG: main
 # --- The name of the secret in Kubernetes that provides access to the private Docker registry
-imagePullSecrets: []
+imagePullSecrets:
+  - name: regcred
 ### Deployment parameters
 
 # --- Number of diag-proxy replicas (pods per deployment)
