@@ -9,8 +9,7 @@ ARTIFACT_DESCRIPTOR_VERSION: ''
 #IMAGE_REPOSITORY: ghcr.io/netcracker/diag-proxy
 #TAG: main
 # --- The name of the secret in Kubernetes that provides access to the private Docker registry
-imagePullSecrets:
-  - name: regcred
+imagePullSecrets: []
 ### Deployment parameters
 
 # --- Number of diag-proxy replicas (pods per deployment)
