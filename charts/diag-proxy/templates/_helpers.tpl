@@ -1,5 +1,5 @@
 {{/*
-Find a env-checker image in various places.
+Find a diag-proxy image in various places.
 Image can be found from:
 * specified by user from .Values.IMAGE_REPOSITORY and .Values.TAG
 * default value
