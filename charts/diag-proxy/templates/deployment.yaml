@@ -54,7 +54,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Values.SERVICE_NAME }}
-        image: '{{ .Values.IMAGE_REPOSITORY }}:{{ .Values.TAG }}'
+        image: {{ template "diag-proxy.image" . }}
         ports:
         - name: cdt-tcp
           containerPort: 1715
