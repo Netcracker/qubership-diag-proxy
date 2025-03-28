@@ -26,28 +26,28 @@ JAEGER_DEFAULT_OTEL_HTTP_PORT="4318"
 
 ### Functions to build nginx config and resolve endpoints
 
-function search_endpoint() {
+search_endpoint() {
     BASE="${1}"
-    if [[ ${BASE} =~ ^[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}$ ]]; then
+    if [ "${BASE}" =~ ^[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}$ ]; then
         ret_val="${BASE}"
         return 0
     fi
     RESOLVED="$(getent hosts "${BASE}" | sed -E 's/[^\s]+\s+(.+)/\1/' | head -n 1 | awk '{print $1}')"
-    if [[ -z "${RESOLVED}" ]]; then
+    if [ -z "${RESOLVED}" ]; then
         echo >&2 "can not resolve domain name ${BASE}"
         exit 1
     fi
     ret_val="${RESOLVED}"
 }
 
-function forward_server() {
+forward_server() {
     ENDPOINT="$1"
     ENDPOINT_PORT="$2"
     PORT="$3"
     SSL="$4"
 
     # ENV variable should be set and has a "true" value
-    if [ -n ${SKIP_HOSTNAME_RESOLVING} ] && [ ${SKIP_HOSTNAME_RESOLVING:-"false"} == "true" ]; then
+    if [ -n "${SKIP_HOSTNAME_RESOLVING}" ] && [ "${SKIP_HOSTNAME_RESOLVING:-"false"}" == "true" ]; then
         echo "skip endpoint resolving, proxy :${PORT} -> ${ENDPOINT}:${ENDPOINT_PORT}"
     else
         local ret_val=none
@@ -56,23 +56,23 @@ function forward_server() {
         echo "resolved endpoint ${ENDPOINT} into $ret_val, proxy :${PORT} -> ${ENDPOINT}:${ENDPOINT_PORT}"
     fi
 
-    if [ -n ${SSL} ] && [ ${SSL:-"false"} = "true" ]; then
+    if [ -n "${SSL}" ] && [ "${SSL:-"false"}" = "true" ]; then
         the_http_forward='
 server {
 '"${RESOLVERS}"'
     listen 0.0.0.0:'"${PORT}"';
     server_name _;
     location / {
-      set $backend_in_var_for_dns_resolv '"${ENDPOINT}"';
-      proxy_pass https://$backend_in_var_for_dns_resolv:'"${ENDPOINT_PORT}"';
-      proxy_buffer_size 8k;
-      proxy_connect_timeout 1s;
-      proxy_ssl_trusted_certificate /etc/nginx/certs/ca.crt;
-      proxy_ssl_certificate /etc/nginx/certs/tls.crt;
-      proxy_ssl_certificate_key /etc/nginx/certs/tls.key;
-      proxy_ssl_verify on;
-      proxy_ssl_verify_depth 1;
-      client_max_body_size 10G;
+        set $backend_in_var_for_dns_resolv '"${ENDPOINT}"';
+        proxy_pass https://$backend_in_var_for_dns_resolv:'"${ENDPOINT_PORT}"';
+        proxy_buffer_size 8k;
+        proxy_connect_timeout 1s;
+        proxy_ssl_trusted_certificate /etc/nginx/certs/ca.crt;
+        proxy_ssl_certificate /etc/nginx/certs/tls.crt;
+        proxy_ssl_certificate_key /etc/nginx/certs/tls.key;
+        proxy_ssl_verify on;
+        proxy_ssl_verify_depth 1;
+        client_max_body_size 10G;
     }
 }'
 
@@ -100,11 +100,11 @@ server {
     listen 0.0.0.0:'"${PORT}"';
     server_name _;
     location / {
-      set $backend_in_var_for_dns_resolv '"${ENDPOINT}"';
-      proxy_pass http://$backend_in_var_for_dns_resolv:'"${ENDPOINT_PORT}"';
-      proxy_buffer_size 8k;
-      proxy_connect_timeout 1s;
-      client_max_body_size 10G;
+        set $backend_in_var_for_dns_resolv '"${ENDPOINT}"';
+        proxy_pass http://$backend_in_var_for_dns_resolv:'"${ENDPOINT_PORT}"';
+        proxy_buffer_size 8k;
+        proxy_connect_timeout 1s;
+        client_max_body_size 10G;
     }
 }'
 
@@ -119,7 +119,7 @@ server {
     fi
 }
 
-function assemble_stream_forwards() {
+assemble_stream_forwards() {
     local the_stream_forward
     local the_http_forward
 
@@ -163,14 +163,14 @@ function assemble_stream_forwards() {
 
 ### Set defaults if ENV is not specified
 if [ -z "${ESC_COLLECTOR_PORT}" ]; then
-    if [ -n ${ESC_SSL_ENABLED} ] && [ ${ESC_SSL_ENABLED:-"false"} == "true" ]; then
+    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" == "true" ]; then
         ESC_COLLECTOR_PORT="1717"
     else
         ESC_COLLECTOR_PORT="1715"
     fi
 fi
 if [ -z "${ESC_STATIC_PORT}" ]; then
-    if [ -n ${ESC_SSL_ENABLED} ] && [ ${ESC_SSL_ENABLED:-"false"} == "true" ]; then
+    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" == "true" ]; then
         ESC_STATIC_PORT="8443"
     else
         ESC_STATIC_PORT="8080"
