@@ -72,6 +72,7 @@ server {
       proxy_ssl_certificate_key /etc/nginx/certs/tls.key;
       proxy_ssl_verify on;
       proxy_ssl_verify_depth 1;
+      client_max_body_size 10G;
     }
 }'
 
@@ -83,6 +84,7 @@ server {
     proxy_buffer_size 8k;
     proxy_connect_timeout 1s;
     proxy_ssl_name '"${ENDPOINT}"';
+    proxy_ssl_server_name on;
     proxy_ssl_certificate /etc/nginx/certs/tls.crt;
     proxy_ssl_certificate_key /etc/nginx/certs/tls.key;
     proxy_ssl_trusted_certificate /etc/nginx/certs/ca.crt;
@@ -102,6 +104,7 @@ server {
       proxy_pass http://$backend_in_var_for_dns_resolv:'"${ENDPOINT_PORT}"';
       proxy_buffer_size 8k;
       proxy_connect_timeout 1s;
+      client_max_body_size 10G;
     }
 }'
 
@@ -167,7 +170,11 @@ if [ -z "${ESC_COLLECTOR_PORT}" ] ; then
   fi
 fi
 if [ -z "${ESC_STATIC_PORT}" ] ; then
-  ESC_STATIC_PORT="8080"
+  if [ -n ${ESC_SSL_ENABLED} ] && [ ${ESC_SSL_ENABLED:-"false"} == "true" ] ; then
+    ESC_STATIC_PORT="8443"
+  else
+    ESC_STATIC_PORT="8080"
+  fi
 fi
 if [ -z "${ZIPKIN_COLLECTOR_PORT}" ] ; then
   ZIPKIN_COLLECTOR_PORT="9411"
@@ -257,4 +264,4 @@ echo "${HTTP_FORWARDS}" > /etc/nginx/conf.d/http/02-http-proxy.conf
 {
   echo "${RESOLVERS}";
   echo "${STREAM_FORWARDS}";
-} >> /etc/nginx/conf.d/stream/01-tcp-proxy.conf
+} > /etc/nginx/conf.d/stream/01-tcp-proxy.conf
