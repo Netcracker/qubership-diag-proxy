@@ -5,8 +5,8 @@ name: "Lint PR Title"
 on:
   pull_request:
     types:
-      - opened
-      - edited
+    - opened
+    - edited
 
 permissions:
   pull-requests: read

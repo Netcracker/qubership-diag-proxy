@@ -5,9 +5,9 @@ name: Conventional Commits PR Check
 on:
   pull_request:
     types:
-      - opened
-      - edited
-      - synchronize
+    - opened
+    - edited
+    - synchronize
 
 permissions:
   pull-requests: read
