@@ -42,8 +42,10 @@ jobs:
         component:
         - name: diag-proxy
           file: Dockerfile
+          context: ""
         - name: diag-proxy-transfer
           file: docker-transfer/Dockerfile
+          context: ""
     runs-on: ubuntu-latest
     name: ${{ matrix.component.name }}
     steps:
