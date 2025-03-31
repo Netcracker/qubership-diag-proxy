@@ -27,17 +27,21 @@ JAEGER_DEFAULT_OTEL_HTTP_PORT="4318"
 ### Functions to build nginx config and resolve endpoints
 
 search_endpoint() {
-    BASE="${1}"
-    if [ "${BASE}" =~ ^[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}\.[0-9]{1-3}$ ]; then
-        ret_val="${BASE}"
-        return 0
-    fi
-    RESOLVED="$(getent hosts "${BASE}" | sed -E 's/[^\s]+\s+(.+)/\1/' | head -n 1 | awk '{print $1}')"
-    if [ -z "${RESOLVED}" ]; then
-        echo >&2 "can not resolve domain name ${BASE}"
+    BASE="$1"
+    case "$BASE" in
+        [0-9]*.[0-9]*.[0-9]*.[0-9]*)
+            ret_val="$BASE"
+            return 0
+            ;;
+    esac
+
+    RESOLVED=$(getent hosts "$BASE" | sed -E 's/[^\s]+\s+(.+)/\1/' | head -n 1 | awk '{print $1}')
+    if [ -z "$RESOLVED" ]; then
+        echo "can not resolve domain name $BASE" >&2
         exit 1
     fi
-    ret_val="${RESOLVED}"
+
+    ret_val="$RESOLVED"
 }
 
 forward_server() {
@@ -47,7 +51,7 @@ forward_server() {
     SSL="$4"
 
     # ENV variable should be set and has a "true" value
-    if [ -n "${SKIP_HOSTNAME_RESOLVING}" ] && [ "${SKIP_HOSTNAME_RESOLVING:-"false"}" == "true" ]; then
+    if [ -n "${SKIP_HOSTNAME_RESOLVING}" ] && [ "${SKIP_HOSTNAME_RESOLVING:-"false"}" = "true" ]; then
         echo "skip endpoint resolving, proxy :${PORT} -> ${ENDPOINT}:${ENDPOINT_PORT}"
     else
         local ret_val=none
@@ -163,14 +167,14 @@ assemble_stream_forwards() {
 
 ### Set defaults if ENV is not specified
 if [ -z "${ESC_COLLECTOR_PORT}" ]; then
-    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" == "true" ]; then
+    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" = "true" ]; then
         ESC_COLLECTOR_PORT="1717"
     else
         ESC_COLLECTOR_PORT="1715"
     fi
 fi
 if [ -z "${ESC_STATIC_PORT}" ]; then
-    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" == "true" ]; then
+    if [ -n "${ESC_SSL_ENABLED}" ] && [ "${ESC_SSL_ENABLED:-"false"}" = "true" ]; then
         ESC_STATIC_PORT="8443"
     else
         ESC_STATIC_PORT="8080"
