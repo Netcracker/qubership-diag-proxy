@@ -101,4 +101,4 @@ JAEGER_COLLECTOR_HOST: jaeger-collector-new.tracing-new.svc  # this value will u
 
 ## Examples
 
-You can find examples in the document [Examples](/docs/examples.md).
+You can find examples in the document [Examples](docs/examples.md).
