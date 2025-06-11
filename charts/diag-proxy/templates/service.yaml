@@ -7,7 +7,6 @@ metadata:
     app.kubernetes.io/version: '{{ .Values.ARTIFACT_DESCRIPTOR_VERSION }}'
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: esc
-    app.kubernetes.io/managed-by: saasDeployer
 spec:
   ports:
   - name: cdt-tcp

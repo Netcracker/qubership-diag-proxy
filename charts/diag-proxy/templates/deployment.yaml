@@ -1,4 +1,3 @@
-# This template can be applying for deploy in Kubernetes or OpenShift >=3.11
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -111,10 +110,6 @@ spec:
         {{- if .Values.SKIP_HOSTNAME_RESOLVING }}
         - name: SKIP_HOSTNAME_RESOLVING
           value: {{ .Values.SKIP_HOSTNAME_RESOLVING | quote }}
-        {{- end }}
-        {{- if .Values.tlsConfig.enabled }}
-        - name: ESC_SSL_ENABLED
-          value: {{ .Values.tlsConfig.enabled | quote }}
         {{- end }}
         {{- if .Values.ESC_COLLECTOR_NS }}
         - name: ESC_COLLECTOR_NS
