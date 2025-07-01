@@ -32,8 +32,6 @@ Profiler should be encrypted consider below representation of the Use case. In t
 HTTP/TCP traffic without TLS and diag-proxy will encrypt traffic and forward it to the Profiler which has
 TLS support enabled.
 
-![Cloud Profiler and Application on different clusters](/docs/internal/images/cloud_profiler_and_application_on_different_clusters.png)
-
 To deploy Diag proxy to proxy only Profiler/ESC/CDT requests with TLS support you can specify namespace
 name where deployed Profiler/ESC/CDT and following tls configuration:
 
