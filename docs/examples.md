@@ -26,7 +26,7 @@ ESC_COLLECTOR_NS: profiler
 
 ## Proxy to Profiler/ESC/CDT with TLS
 
-In production deployment there might be a situation where actual application need to be profiled and Profiler 
+In production deployment there might be a situation where actual application need to be profiled and Profiler
 application are deployed on different cluster. In this case, TCP and HTTP communication from application to
 Profiler should be encrypted consider below representation of the Use case. In this case application will send
 HTTP/TCP traffic without TLS and diag-proxy will encrypt traffic and forward it to the Profiler which has
