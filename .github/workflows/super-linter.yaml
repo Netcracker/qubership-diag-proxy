@@ -73,20 +73,20 @@ jobs:
         mkdir -p ./.github/linters
         cp --update=none -vRT /tmp/linter-config/linters ./.github/linters
 
-    - name: "Load super-linter environment file"
-      shell: bash
-      run: |
-        # shellcheck disable=2086
-        if [ -f "${GITHUB_WORKSPACE}/.github/super-linter.env" ]; then
-          echo "Applying local linter environment:"
-          grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#"
-          grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#" >> $GITHUB_ENV
-        elif [ -f "/tmp/linter-config/linters/super-linter.env" ]; then
-          echo "::warning:: Local linter environment file .github/super-linter.env is not found"
-          echo "Applying common linter environment:"
-          grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#"
-          grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#" >> $GITHUB_ENV
-        fi
+      - name: "Load super-linter environment file"
+        shell: bash
+        run: |
+          # shellcheck disable=2086
+          if [ -f "${GITHUB_WORKSPACE}/.github/super-linter.env" ]; then
+            echo "Applying local linter environment:"
+            grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#"
+            grep "\S" ${GITHUB_WORKSPACE}/.github/super-linter.env | grep -v "^#" >> $GITHUB_ENV
+          elif [ -f "/tmp/linter-config/linters/super-linter.env" ]; then
+            echo "::warning:: Local linter environment file .github/super-linter.env is not found"
+            echo "Applying common linter environment:"
+            grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#"
+            grep "\S" /tmp/linter-config/linters/super-linter.env | grep -v "^#" >> $GITHUB_ENV
+          fi
 
     - name: Lint Code Base
       uses: super-linter/super-linter/slim@ffde3b2b33b745cb612d787f669ef9442b1339a6 # v8.1.0

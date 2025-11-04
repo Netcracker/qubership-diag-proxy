@@ -7,6 +7,10 @@
 # - .gitignore
 # - .yamlignore
 
+# To lint YAML from Helm chart we have to use another linters
+ignore:
+- charts/
+
 rules:
   braces:
     min-spaces-inside: 1
@@ -46,6 +50,7 @@ rules:
   hyphens:
     max-spaces-after: 1
   indentation:
+    level: warning
     spaces: 2
     indent-sequences: consistent
     check-multi-line-strings: false
