@@ -1,6 +1,6 @@
 name: Security Scan Docker Packages
 run-name: >
-  Security Scan #${{ github.run_number }} for ${{ inputs.image != '' && inputs.image != null && inputs.image || 'all repository docker images' }}
+  Security Scan #${{ github.run_number }} for ${{ inputs.image || 'all repository docker images' }}
 on:
   workflow_dispatch:
     inputs:
@@ -94,7 +94,7 @@ jobs:
       contents: read
       security-events: write
       packages: read
-    needs:  load-config
+    needs: load-config
     strategy:
       matrix:
         package: ${{ fromJson(needs.load-config.outputs.packages) }}
