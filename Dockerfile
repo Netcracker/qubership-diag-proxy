@@ -1,4 +1,4 @@
-FROM nginx:1.31.2-alpine
+FROM nginx:1.31.3-alpine
 
 ENV APP_UID=10001
 
