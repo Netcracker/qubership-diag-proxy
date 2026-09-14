@@ -24,6 +24,45 @@ JAEGER_DEFAULT_THRIFT_PORT="14268"
 JAEGER_DEFAULT_OTEL_GRPC_PORT="4317"
 JAEGER_DEFAULT_OTEL_HTTP_PORT="4318"
 
+### Structured logging helper
+
+# Escape a value so it can be placed inside a JSON string: backslash, double
+# quote, tab and newline. ash has no JSON encoder, so this is done by hand.
+function json_escape() {
+  printf '%s' "${1}" \
+    | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/\\t/g' -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g'
+}
+
+# Print one NDJSON log line: log_json <LEVEL> <message> [key value]...
+# Pairs with an empty value are skipped, per the logging guide. ERROR and WARN
+# go to stderr, everything else to stdout. Always returns 0 so that "set -e"
+# never aborts container startup because of a log call.
+function log_json() {
+  local level="${1}"
+  local message="${2}"
+  local line
+  local key
+  local value
+  shift 2
+  line="{\"time\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\""
+  line="${line},\"level\":\"${level}\""
+  line="${line},\"message\":\"$(json_escape "${message}")\""
+  while [ "$#" -ge 2 ] ; do
+    key="${1}"
+    value="${2}"
+    shift 2
+    if [ -n "${value}" ] ; then
+      line="${line},\"$(json_escape "${key}")\":\"$(json_escape "${value}")\""
+    fi
+  done
+  line="${line}}"
+  case "${level}" in
+    ERROR|WARN) printf '%s\n' "${line}" >&2 ;;
+    *)          printf '%s\n' "${line}" ;;
+  esac
+  return 0
+}
+
 ### Functions to build nginx config and resolve endpoints
 
 function search_endpoint() {
@@ -34,7 +73,7 @@ function search_endpoint() {
   fi
   RESOLVED="$(getent hosts "${BASE}" | sed -E 's/[^\s]+\s+(.+)/\1/' | head -n 1 | awk '{print $1}')"
   if [[ -z "${RESOLVED}" ]] ; then
-    >&2 echo "can not resolve domain name ${BASE}"
+    log_json ERROR "Cannot resolve domain name" host "${BASE}"
     exit 1
   fi
   ret_val="${RESOLVED}"
@@ -48,12 +87,12 @@ function forward_server () {
 
   # ENV variable should be set and has a "true" value
   if [ -n ${SKIP_HOSTNAME_RESOLVING} ] && [ ${SKIP_HOSTNAME_RESOLVING:-"false"} == "true" ] ; then
-    echo "skip endpoint resolving, proxy :${PORT} -> ${ENDPOINT}:${ENDPOINT_PORT}"
+    log_json INFO "Skipping endpoint resolving" listen_port "${PORT}" endpoint_host "${ENDPOINT}" endpoint_port "${ENDPOINT_PORT}"
   else
     local ret_val=none
-    search_endpoint "$ENDPOINT" || (echo "could not parse ${ENDPOINT}" && exit 1)
+    search_endpoint "$ENDPOINT" || (log_json ERROR "Cannot parse endpoint" endpoint_host "${ENDPOINT}" && exit 1)
     ENDPOINT=$ret_val
-    echo "resolved endpoint ${ENDPOINT} into $ret_val, proxy :${PORT} -> ${ENDPOINT}:${ENDPOINT_PORT}"
+    log_json INFO "Resolved endpoint" endpoint_host "${ENDPOINT}" resolved_ip "${ret_val}" listen_port "${PORT}" endpoint_port "${ENDPOINT_PORT}"
   fi
 
   if [ -n ${SSL} ] && [ ${SSL:-"false"} = "true" ]; then
