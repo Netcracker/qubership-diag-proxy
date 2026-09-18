@@ -12,6 +12,7 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
   -out "${work_dir}/tls.crt" \
   -subj "/CN=diag-proxy-ci" >/dev/null 2>&1
 cp "${work_dir}/tls.crt" "${work_dir}/ca.crt"
+chmod 644 "${work_dir}/ca.crt" "${work_dir}/tls.crt" "${work_dir}/tls.key"
 
 run_nginx_test() {
   local name="$1"
