@@ -25,12 +25,15 @@ on:
         default: false
         required: false
         description: "Lint all codebase"
-permissions:
-  contents: read
+
+permissions: {}
 
 jobs:
   prepare-configs:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
     - name: "Get the common linters configuration"
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -49,6 +52,7 @@ jobs:
   run-lint:
     needs: [prepare-configs]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: read
@@ -93,3 +97,17 @@ jobs:
         # To report GitHub Actions status checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BRANCH: ${{ github.event.pull_request.base.ref || github.event.push.ref }}
+
+  lint-gate:
+    name: Lint Gate
+    needs: [prepare-configs, run-lint]
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require lint validation
+        if: >-
+          needs.prepare-configs.result != 'success' ||
+          needs.run-lint.result != 'success'
+        run: exit 1
