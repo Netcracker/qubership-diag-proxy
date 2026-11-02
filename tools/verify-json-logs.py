@@ -10,14 +10,16 @@ IMAGE = os.environ.get("DIAG_PROXY_IMAGE", "diag-proxy:test")
 
 
 def docker(*args, check=True):
-    return subprocess.run(
-        ["docker", *args], capture_output=True, text=True, check=check, timeout=30
-    )
+    return subprocess.run(["docker", *args], capture_output=True, text=True, check=check, timeout=30)
 
 
 class JsonLogsTest(unittest.TestCase):
     def test_startup_preserves_special_characters_in_one_record(self):
-        host = 'collector"\\\u043a\u0438\u0440\u0438\u043b\u043b\u0438\u0446\u0430' + "".join(chr(i) for i in range(1, 32)) + "\n"
+        host = (
+            'collector"\\\u043a\u0438\u0440\u0438\u043b\u043b\u0438\u0446\u0430'
+            + "".join(chr(i) for i in range(1, 32))
+            + "\n"
+        )
         result = docker(
             "run",
             "--rm",
