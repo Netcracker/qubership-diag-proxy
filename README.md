@@ -2,6 +2,7 @@
 
 * [Diag proxy](#diag-proxy)
   * [Overview](#overview)
+  * [Logging](#logging)
   * [Before you begin](#before-you-begin)
   * [Deploy in application namespace](#deploy-in-application-namespace)
   * [Deploy](#deploy)
@@ -22,6 +23,27 @@ The main purpose of `diag-proxy` is to simplify settings in components.
 
 By using `diag-proxy`, we can configure addresses for profiler agent and tracing agent.
 And specify addresses of Profiler and OTEL/Jaeger/Zipkin collectors in one place.
+
+## Logging
+
+Startup messages and HTTP access records use one JSON object per line. Startup warnings and errors go to stderr;
+other startup records and HTTP access records go to stdout. HTTP records include `time`, `level`, `message`, `uri`,
+`status`, timing, and upstream fields. `request_id` is present only when the request includes `X-Request-Id`.
+The access log omits query parameters, authorization headers, cookies, and request bodies. Health probes are not logged.
+
+Nginx error diagnostics remain text on stderr because nginx does not support a JSON error-log format.
+Route these records separately from JSON logs. Error diagnostics can contain the original request URI, including query
+parameters; keep credentials out of request URLs. TCP forwarding does not produce access records.
+
+`Cannot resolve domain name` means startup could not resolve the configured collector host. Check the `host` field,
+the corresponding `*_HOST` or `*_NS` setting, and DNS availability in the pod.
+
+Build an image and run the container checks with Docker, Python 3, and OpenSSL installed:
+
+```bash
+docker build -t diag-proxy:test .
+./tools/verify-nginx.sh diag-proxy:test
+```
 
 ## Before you begin
 
@@ -57,19 +79,19 @@ You can override this value if you want to send diagnostic data directly to the 
 | `JAEGER_OTEL_GRPC_PORT`       | `4317`                                      | Jaeger port to receive traces in OpenTelemetry format from any external clients (over gRPC)                                                                                               |
 | `JAEGER_OTEL_HTTP_PORT`       | `4318`                                      | Jaeger port to receive traces in OpenTelemetry format from any external clients (over HTTP)                                                                                               |
 | `SKIP_HOSTNAME_RESOLVING`     | `false`                                     | Disable host resolving during run and allow to run agent with pre-configured hosts without checking them                                                                                  |
-| `NUMBER_OF_PODS`              | `1`                                         | Number of diag-proxy replicas (pods per deployment)                                                                                                                              |
+| `NUMBER_OF_PODS`              | `1`                                         | Number of diag-proxy replicas (pods per deployment)                                                                                                                                       |
 | `CPU_LIMIT`                   | `500m`                                      | Allow to set CPU limits for pod                                                                                                                                                           |
 | `CPU_REQUEST`                 | `100m`                                      | Allow to set CPU request for pod                                                                                                                                                          |
 | `MEMORY_LIMIT`                | `500Mi`                                     | Allow to set Memory limits for pod                                                                                                                                                        |
 | `MEMORY_REQUEST`              | `20Mi`                                      | Allow to set Memory request for pod                                                                                                                                                       |
 | `ARTIFACT_DESCRIPTOR_VERSION` | `-`                                         | Sets value for `app.kubernetes.io/version` label                                                                                                                                          |
-| `IMAGE_REPOSITORY`            | `-`                                         | A docker image to use for diag-proxy deployment                                                                                                                                  |
+| `IMAGE_REPOSITORY`            | `-`                                         | A docker image to use for diag-proxy deployment                                                                                                                                           |
 | `PRIORITY_CLASS_NAME`         | `-`                                         | Assigned to the Pods to prevent them from evicting                                                                                                                                        |
 | `tlsConfig`                   | `-`                                         | TLS configuration for upstream application cloud profiler  i.e. collector-service and static service                                                                                      |
 | `tlsConfig.enabled`           | `false`                                     | Enable or Disable TLS for upstream application cloud profiler  i.e. collector-service and static service                                                                                  |
-| `tlsConfig.caCert`            | `-`                                         | CA certificate for maintaining trust between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                         |
-| `tlsConfig.tlsCert`           | `-`                                         | TLS certificate needed for encrypted traffic between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                 |
-| `tlsConfig.tlsKey`            | `-`                                         | TLS Key needed for encrypted traffic between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                         |
+| `tlsConfig.caCert`            | `-`                                         | CA certificate for maintaining trust between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                                  |
+| `tlsConfig.tlsCert`           | `-`                                         | TLS certificate needed for encrypted traffic between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                          |
+| `tlsConfig.tlsKey`            | `-`                                         | TLS Key needed for encrypted traffic between diag-proxy and TLS enabled the upstream application(Currently collector and static-service)                                                  |
 <!-- markdownlint-enable line-length -->
 
 ### Parameter order and override
