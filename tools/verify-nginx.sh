@@ -39,3 +39,5 @@ run_nginx_test() {
 
 run_nginx_test plain
 run_nginx_test tls -e ESC_SSL_ENABLED=true
+
+DIAG_PROXY_IMAGE="${image}" python3 "$(dirname "${BASH_SOURCE[0]}")/verify-json-logs.py"

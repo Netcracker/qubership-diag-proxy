@@ -57,7 +57,7 @@ jobs:
               proxy=true
               transfer=true
               ;;
-            Dockerfile|src/*|charts/*)
+            Dockerfile|src/*|charts/*|tools/verify-json-logs.py)
               proxy=true
               ;;
             docker-transfer/*|docs/*)
